@@ -1,94 +1,89 @@
 import { pool } from "../config/db";
 
-import { pool } from "../config/db";
-
 export const createBookingService = async (
   userId: number,
   eventId: number,
-  seatNumber: string
+  seatNumbers: string[]
 ) => {
-
   const client = await pool.connect();
 
   try {
-
     await client.query("BEGIN");
 
-    // Find seat and lock it
-    const seatResult = await client.query(
-      `
-      SELECT id
-      FROM seats
-      WHERE venue_id = (
-        SELECT venue_id
-        FROM events
-        WHERE id = $1
-      )
-      AND seat_number = $2
-      FOR UPDATE
-      `,
-      [eventId, seatNumber]
-    );
-
-    if (seatResult.rows.length === 0) {
-      throw new Error("Seat not found");
-    }
-
-    const seatId = seatResult.rows[0].id;
-
-    // Check if already booked
-    const bookingResult = await client.query(
-      `
-      SELECT id
-      FROM bookings
-      WHERE event_id = $1
-      AND seat_id = $2
-      `,
-      [eventId, seatId]
-    );
-
-    if (bookingResult.rows.length > 0) {
-      throw new Error("Seat already booked");
-    }
-
-    // Get event price
+    // Get event price once
     const eventResult = await client.query(
       `
-      SELECT price
+      SELECT price, venue_id
       FROM events
       WHERE id = $1
       `,
       [eventId]
     );
 
-    const price = eventResult.rows[0].price;
+    if (eventResult.rows.length === 0) {
+      throw new Error("Event not found");
+    }
 
-    // Insert booking
-    await client.query(
-      `
-      INSERT INTO bookings
-      (user_id,event_id,seat_id,total_amount)
-      VALUES($1,$2,$3,$4)
-      `,
-      [userId, eventId, seatId, price]
-    );
+    const price = Number(eventResult.rows[0].price);
+    const venueId = eventResult.rows[0].venue_id;
+
+    for (const seatNumber of seatNumbers) {
+      // Lock seat
+      const seatResult = await client.query(
+        `
+        SELECT id
+        FROM seats
+        WHERE venue_id = $1
+        AND seat_number = $2
+        FOR UPDATE
+        `,
+        [venueId, seatNumber]
+      );
+
+      if (seatResult.rows.length === 0) {
+        throw new Error(`Seat ${seatNumber} not found`);
+      }
+
+      const seatId = seatResult.rows[0].id;
+
+      // Already booked?
+      const bookingResult = await client.query(
+        `
+        SELECT id
+        FROM bookings
+        WHERE event_id = $1
+        AND seat_id = $2
+        `,
+        [eventId, seatId]
+      );
+
+      if (bookingResult.rows.length > 0) {
+        throw new Error(`Seat ${seatNumber} already booked`);
+      }
+
+      // Insert booking
+      await client.query(
+        `
+        INSERT INTO bookings
+        (user_id,event_id,seat_id,total_amount)
+        VALUES($1,$2,$3,$4)
+        `,
+        [userId, eventId, seatId, price]
+      );
+    }
 
     await client.query("COMMIT");
 
     return {
       message: "Booking Successful",
+      seats: seatNumbers,
+      totalAmount: price * seatNumbers.length,
     };
-
   } catch (error) {
-
     await client.query("ROLLBACK");
-
     throw error;
-
   } finally {
-
     client.release();
-
   }
 };
 
@@ -119,8 +114,6 @@ export const cancelBookingService = async (
   userId: number,
   bookingId: number
 ) => {
-
-  // Check if booking exists and belongs to the logged-in user
   const bookingResult = await pool.query(
     `
     SELECT *
@@ -135,7 +128,6 @@ export const cancelBookingService = async (
     throw new Error("Booking not found");
   }
 
-  // Delete booking
   await pool.query(
     `
     DELETE FROM bookings

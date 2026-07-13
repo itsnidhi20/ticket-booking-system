@@ -1,11 +1,18 @@
 import express from "express";
+import cors from "cors";
+
 import eventRoutes from "./routes/eventRoutes";
 import userRoutes from "./routes/userRoutes";
-import { authenticate } from "./middleware/authMiddleware";
 import bookingRoutes from "./routes/bookingRoutes";
-
+import { authenticate } from "./middleware/authMiddleware";
 
 const app = express();
+
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+  })
+);
 
 app.use(express.json());
 

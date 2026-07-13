@@ -9,22 +9,27 @@ export const createBooking = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.id;
 
-    const { eventId, seatNumber } = req.body;
+    const { eventId, seatNumbers } = req.body;
 
-    const booking = await createBookingService(
-      userId,
-      eventId,
-      seatNumber
-    );
-
-    res.status(201).json(booking);
-  } catch (error: any) {
-    if (error.code === "23505") {
+    if (
+      !eventId ||
+      !seatNumbers ||
+      !Array.isArray(seatNumbers) ||
+      seatNumbers.length === 0
+    ) {
       return res.status(400).json({
-        message: "Seat already booked",
+        message: "eventId and seatNumbers are required",
       });
     }
 
+    const result = await createBookingService(
+      userId,
+      eventId,
+      seatNumbers
+    );
+
+    res.status(201).json(result);
+  } catch (error: any) {
     res.status(400).json({
       message: error.message,
     });
