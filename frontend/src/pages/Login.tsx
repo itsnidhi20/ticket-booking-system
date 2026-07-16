@@ -1,58 +1,104 @@
 import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import api from "../services/api";
 
 function Login() {
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = async () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleLogin = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
+    e.preventDefault();
+
+    setError("");
+
     try {
-      const response = await api.post("/users/login", {
+      setLoading(true);
+
+      const res = await api.post("/users/login", {
         email,
         password,
       });
 
-      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem(
+        "user",
+        JSON.stringify(res.data.user)
+      );
 
-      alert("Login Successful!");
-    } catch (error) {
-      alert("Invalid Credentials");
+      navigate("/profile");
+    } catch (err: any) {
+      setError(
+        err.response?.data?.message || "Login failed"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-[85vh] flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-[#F9F6F0] px-6">
 
-      <div className="w-[420px] bg-white rounded-3xl shadow-xl p-10">
+      <form
+        onSubmit={handleLogin}
+        className="w-full max-w-md bg-white rounded-3xl shadow-xl p-10"
+      >
 
-        <h1 className="text-5xl text-center text-[#1A1A1A] mb-8">
-          Welcome Back
+        <h1 className="text-5xl font-bold mb-10">
+          Login
         </h1>
+
+        {error && (
+          <div className="mb-6 rounded-xl bg-red-100 text-red-700 p-3">
+            {error}
+          </div>
+        )}
 
         <input
           type="email"
           placeholder="Email"
-          className="w-full border rounded-xl p-4 mb-5"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) =>
+            setEmail(e.target.value)
+          }
+          className="w-full mb-5 rounded-xl border p-4 outline-none"
         />
 
         <input
           type="password"
           placeholder="Password"
-          className="w-full border rounded-xl p-4 mb-8"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) =>
+            setPassword(e.target.value)
+          }
+          className="w-full mb-8 rounded-xl border p-4 outline-none"
         />
 
         <button
-          onClick={handleLogin}
-          className="w-full bg-[#C36241] text-white py-4 rounded-xl hover:opacity-90"
+          type="submit"
+          disabled={loading}
+          className="w-full rounded-xl bg-black text-white py-4 hover:bg-[#C36241] transition"
         >
-          Login
+          {loading ? "Logging In..." : "Login"}
         </button>
 
-      </div>
+        <p className="mt-6 text-center text-stone-600">
+          Don't have an account?{" "}
+          <Link
+            to="/register"
+            className="font-semibold text-[#C36241]"
+          >
+            Register
+          </Link>
+        </p>
+
+      </form>
 
     </div>
   );

@@ -8,49 +8,72 @@ export const createUser = async (
   email: string,
   password: string
 ) => {
-  try {
-    const hashedPassword = await bcrypt.hash(password, 10);
 
-    const otp = Math.floor(
-      100000 + Math.random() * 900000
-    ).toString();
-
-    const expiry = new Date(
-      Date.now() + 10 * 60 * 1000
-    );
-
-    const result = await pool.query(
-      `
-      INSERT INTO users
-      (
-        name,
-        email,
-        password_hash,
-        otp,
-        otp_expiry
-      )
-      VALUES($1,$2,$3,$4,$5)
-      RETURNING id,name,email;
-      `,
-      [
-        name,
-        email,
-        hashedPassword,
-        otp,
-        expiry,
-      ]
-    );
-
-    await sendOTPEmail(email, otp);
-
-    return result.rows[0];
-  } catch (error: any) {
-    if (error.code === "23505") {
-      throw new Error("Email already registered");
-    }
-
-    throw error;
+  // Validation
+  if (!name.trim()) {
+    throw new Error("Name is required");
   }
+
+  const emailRegex =
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!emailRegex.test(email)) {
+    throw new Error("Invalid email address");
+  }
+
+  if (password.length < 6) {
+    throw new Error(
+      "Password must be at least 6 characters"
+    );
+  }
+
+  // Check duplicate email
+  const existingUser = await pool.query(
+    `
+    SELECT id
+    FROM users
+    WHERE email = $1
+    `,
+    [email]
+  );
+
+  if (existingUser.rows.length > 0) {
+    throw new Error("Email already registered");
+  }
+
+  const hashedPassword =
+    await bcrypt.hash(password, 10);
+
+  const otp = Math.floor(
+    100000 + Math.random() * 900000
+  ).toString();
+
+  const expiry = new Date(
+    Date.now() + 10 * 60 * 1000
+  );
+
+  await pool.query(
+    `
+    INSERT INTO users
+    (
+      name,
+      email,
+      password_hash,
+      otp,
+      otp_expiry
+    )
+    VALUES ($1,$2,$3,$4,$5)
+    `,
+    [
+      name,
+      email,
+      hashedPassword,
+      otp,
+      expiry,
+    ]
+  );
+
+  await sendOTPEmail(email, otp);
 };
 
 export const login = async (

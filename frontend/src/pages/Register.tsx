@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import api from "../services/api";
 
 function Register() {
   const navigate = useNavigate();
@@ -7,7 +8,8 @@ function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] =
+    useState("");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -19,49 +21,52 @@ function Register() {
 
     setError("");
 
-    if (!name || !email || !password || !confirmPassword) {
-      return setError("Please fill all fields.");
+    if (
+      !name ||
+      !email ||
+      !password ||
+      !confirmPassword
+    ) {
+      setError("Please fill all fields.");
+      return;
     }
 
     if (password !== confirmPassword) {
-      return setError("Passwords do not match.");
+      setError("Passwords do not match.");
+      return;
     }
 
     try {
       setLoading(true);
 
-      const res = await fetch(
-        "http://localhost:5000/users/register",
+      const res = await api.post(
+        "/users/register",
         {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name,
-            email,
-            password,
-          }),
+          name,
+          email,
+          password,
         }
       );
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message);
-      }
-
-      alert("Registration successful! Check your email for OTP.");
+      alert(res.data.message);
 
       navigate("/verify-otp", {
-  state: {
-    email,
-  },
-});
+        state: {
+          email,
+        },
+      });
+
     } catch (err: any) {
-      setError(err.message);
+
+      setError(
+        err.response?.data?.message ||
+        "Registration failed"
+      );
+
     } finally {
+
       setLoading(false);
+
     }
   };
 
@@ -72,12 +77,13 @@ function Register() {
         onSubmit={handleRegister}
         className="w-full max-w-md bg-white rounded-3xl shadow-xl p-10"
       >
+
         <h1 className="text-5xl font-bold mb-10">
           Register
         </h1>
 
         {error && (
-          <div className="mb-6 rounded-xl bg-red-100 text-red-700 p-3">
+          <div className="mb-6 rounded-xl bg-red-100 p-3 text-red-700">
             {error}
           </div>
         )}
@@ -86,40 +92,50 @@ function Register() {
           type="text"
           placeholder="Full Name"
           value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="w-full mb-5 rounded-xl border p-4 outline-none"
+          onChange={(e) =>
+            setName(e.target.value)
+          }
+          className="mb-5 w-full rounded-xl border p-4"
         />
 
         <input
           type="email"
           placeholder="Email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full mb-5 rounded-xl border p-4 outline-none"
+          onChange={(e) =>
+            setEmail(e.target.value)
+          }
+          className="mb-5 w-full rounded-xl border p-4"
         />
 
         <input
           type="password"
           placeholder="Password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full mb-5 rounded-xl border p-4 outline-none"
+          onChange={(e) =>
+            setPassword(e.target.value)
+          }
+          className="mb-5 w-full rounded-xl border p-4"
         />
 
         <input
           type="password"
           placeholder="Confirm Password"
           value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          className="w-full mb-8 rounded-xl border p-4 outline-none"
+          onChange={(e) =>
+            setConfirmPassword(e.target.value)
+          }
+          className="mb-8 w-full rounded-xl border p-4"
         />
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-xl bg-black text-white py-4 hover:bg-[#C36241] transition"
+          className="w-full rounded-xl bg-black py-4 text-white transition hover:bg-[#C36241]"
         >
-          {loading ? "Creating Account..." : "Register"}
+          {loading
+            ? "Creating Account..."
+            : "Register"}
         </button>
 
         <p className="mt-6 text-center text-stone-600">
@@ -131,6 +147,7 @@ function Register() {
             Login
           </Link>
         </p>
+
       </form>
 
     </div>

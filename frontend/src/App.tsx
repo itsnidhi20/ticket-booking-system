@@ -9,6 +9,7 @@ import Bookings from "./pages/Bookings";
 import SeatSelection from "./pages/SeatSelection";
 import EventDetails from "./pages/EventDetails";
 import Profile from "./pages/Profile";
+import VerifyOTP from "./pages/VerifyOTP";
 
 function App() {
   return (
@@ -24,6 +25,10 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         {/* Event Details */}
         <Route path="/event/:id" element={<EventDetails />} />
+        <Route
+          path="/verify-otp"
+          element={<VerifyOTP />}
+        />
       </Routes>
     </div>
   );
