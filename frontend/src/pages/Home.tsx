@@ -7,8 +7,18 @@ function Home() {
   const [events, setEvents] = useState<Event[]>([]);
 
   useEffect(() => {
-    api.get("/events").then((res) => setEvents(res.data));
-  }, []);
+  const fetchEvents = async () => {
+    try {
+      const res = await api.get("/events");
+
+      setEvents(res.data.events);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  fetchEvents();
+}, []);
 
  return (
   <main className="bg-[#F9F6F0] min-h-screen">

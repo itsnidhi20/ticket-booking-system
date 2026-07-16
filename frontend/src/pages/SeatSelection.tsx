@@ -22,7 +22,9 @@ function SeatSelection() {
   const fetchSeats = async () => {
     try {
       const res = await api.get(`/events/${eventId}/seats`);
-      setSeats(res.data);
+
+      setSeats(res.data.seats);
+
     } catch (err) {
       console.log(err);
     }
@@ -31,14 +33,21 @@ function SeatSelection() {
   const toggleSeat = (seat: Seat) => {
     if (seat.booked) return;
 
-    const exists = selectedSeats.find((s) => s.id === seat.id);
+    const exists = selectedSeats.find(
+      (s) => s.id === seat.id
+    );
 
     if (exists) {
       setSelectedSeats(
-        selectedSeats.filter((s) => s.id !== seat.id)
+        selectedSeats.filter(
+          (s) => s.id !== seat.id
+        )
       );
     } else {
-      setSelectedSeats([...selectedSeats, seat]);
+      setSelectedSeats([
+        ...selectedSeats,
+        seat,
+      ]);
     }
   };
 
@@ -61,8 +70,9 @@ function SeatSelection() {
         },
         {
           headers: {
-            Authorization:
-              `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem(
+              "token"
+            )}`,
           },
         }
       );
@@ -76,7 +86,8 @@ function SeatSelection() {
     } catch (err: any) {
 
       alert(
-        err.response?.data?.message || "Booking Failed"
+        err.response?.data?.message ||
+          "Booking Failed"
       );
 
     } finally {
@@ -86,21 +97,22 @@ function SeatSelection() {
     }
   };
 
-  const totalPrice = selectedSeats.length * 4999;
+  const totalPrice =
+    selectedSeats.length * 4999;
 
   return (
     <div className="min-h-screen bg-[#F9F6F0]">
-      <div className="max-w-6xl mx-auto px-8 py-16">
+      <div className="mx-auto max-w-6xl px-8 py-16">
 
         <p className="uppercase tracking-[5px] text-stone-500">
           Event #{eventId}
         </p>
 
-        <h1 className="text-5xl font-bold mt-4">
+        <h1 className="mt-4 text-5xl font-bold">
           Select Your Seats
         </h1>
 
-        <div className="mx-auto mt-10 mb-14 max-w-3xl rounded-full bg-black py-4 text-center text-white tracking-[8px]">
+        <div className="mx-auto mb-14 mt-10 max-w-3xl rounded-full bg-black py-4 text-center tracking-[8px] text-white">
           STAGE
         </div>
 
@@ -110,23 +122,25 @@ function SeatSelection() {
 
             {seats.map((seat) => {
 
-              const selected = selectedSeats.some(
-                (s) => s.id === seat.id
-              );
+              const selected =
+                selectedSeats.some(
+                  (s) => s.id === seat.id
+                );
 
               return (
                 <button
                   key={seat.id}
                   disabled={seat.booked}
-                  onClick={() => toggleSeat(seat)}
+                  onClick={() =>
+                    toggleSeat(seat)
+                  }
                   className={`h-14 w-14 rounded-xl font-semibold transition
-
                   ${
                     seat.booked
-                      ? "bg-red-500 text-white cursor-not-allowed"
+                      ? "cursor-not-allowed bg-red-500 text-white"
                       : selected
-                      ? "bg-[#C36241] text-white scale-110"
-                      : "bg-white border border-stone-300 hover:bg-stone-200"
+                      ? "scale-110 bg-[#C36241] text-white"
+                      : "border border-stone-300 bg-white hover:bg-stone-200"
                   }`}
                 >
                   {seat.seat_number}
@@ -144,7 +158,7 @@ function SeatSelection() {
 
             <div>
 
-              <p className="uppercase text-sm text-stone-500">
+              <p className="text-sm uppercase text-stone-500">
                 Selected Seats
               </p>
 
@@ -153,7 +167,10 @@ function SeatSelection() {
                 {selectedSeats.length === 0
                   ? "-"
                   : selectedSeats
-                      .map((seat) => seat.seat_number)
+                      .map(
+                        (seat) =>
+                          seat.seat_number
+                      )
                       .join(", ")}
 
               </h2>
@@ -162,7 +179,7 @@ function SeatSelection() {
 
             <div className="text-right">
 
-              <p className="uppercase text-sm text-stone-500">
+              <p className="text-sm uppercase text-stone-500">
                 Total
               </p>
 
@@ -177,9 +194,11 @@ function SeatSelection() {
           <button
             onClick={bookSeats}
             disabled={loading}
-            className="mt-8 w-full rounded-full bg-black py-4 text-white hover:bg-stone-800 transition disabled:opacity-50"
+            className="mt-8 w-full rounded-full bg-black py-4 text-white transition hover:bg-stone-800 disabled:opacity-50"
           >
-            {loading ? "Booking..." : "Book Now"}
+            {loading
+              ? "Booking..."
+              : "Book Now"}
           </button>
 
         </div>

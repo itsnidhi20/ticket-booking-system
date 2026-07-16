@@ -18,25 +18,40 @@ function EventDetails() {
   const navigate = useNavigate();
 
   const [event, setEvent] = useState<Event | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchEvent();
   }, []);
 
   const fetchEvent = async () => {
-    const res = await api.get("/events");
+    try {
+      const res = await api.get("/events");
 
-    const found = res.data.find(
-      (e: Event) => e.id === Number(id)
-    );
+      const found = res.data.events.find(
+        (e: Event) => e.id === Number(id)
+      );
 
-    setEvent(found);
+      setEvent(found || null);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="p-20 text-center text-3xl">
+        Loading...
+      </div>
+    );
+  }
 
   if (!event) {
     return (
       <div className="p-20 text-center text-3xl">
-        Loading...
+        Event Not Found
       </div>
     );
   }
@@ -50,6 +65,7 @@ function EventDetails() {
 
           <img
             src={`https://picsum.photos/700/900?random=${event.id}`}
+            alt={event.title}
             className="rounded-3xl shadow-xl"
           />
 
@@ -59,7 +75,7 @@ function EventDetails() {
               {event.venue}
             </p>
 
-            <h1 className="text-6xl mt-4 font-bold">
+            <h1 className="mt-4 text-6xl font-bold">
               {event.title}
             </h1>
 
@@ -84,10 +100,8 @@ function EventDetails() {
             </div>
 
             <button
-              onClick={() =>
-                navigate(`/seats/${event.id}`)
-              }
-              className="mt-12 rounded-full bg-black text-white px-12 py-5 text-xl hover:bg-stone-800"
+              onClick={() => navigate(`/seats/${event.id}`)}
+              className="mt-12 rounded-full bg-black px-12 py-5 text-xl text-white hover:bg-stone-800"
             >
               Book Tickets
             </button>

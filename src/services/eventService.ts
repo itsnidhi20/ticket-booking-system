@@ -1,15 +1,51 @@
-import { pool } from "../config/db";
+import { Request, Response } from "express";
+import {
+  listEvents,
+  getSeatsForEvent,
+} from "../services/eventService";
 
-export const listEvents = async () => {
-  const result = await pool.query(`SELECT * FROM events ORDER BY event_date`);
-  return result.rows;
+// ===============================
+// Get All Events
+// ===============================
+export const getEvents = async (
+  _req: Request,
+  res: Response
+) => {
+  try {
+    const events = await listEvents();
+
+    res.status(200).json({
+      success: true,
+      events,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Internal Server Error",
+    });
+  }
 };
 
-export const getSeatsForEvent = async (eventId: number) => {
-  const result = await pool.query(
-    `SELECT s.id, s.seat_number FROM seats s WHERE s.venue_id = (SELECT venue_id FROM events WHERE id = $1) ORDER BY s.seat_number`,
-    [eventId]
-  );
+// ===============================
+// Get Seats For Event
+// ===============================
+export const getEventSeats = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const eventId = Number(req.params.id);
 
-  return result.rows;
+    const seats = await getSeatsForEvent(eventId);
+
+    res.status(200).json({
+      success: true,
+      seats,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Internal Server Error",
+    });
+  }
 };
