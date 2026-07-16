@@ -4,6 +4,8 @@ import {
   login,
   getProfileService,
   verifyOTPService,
+  forgotPasswordService,
+  resetPasswordService,
 } from "../services/userService";
 
 // ===============================
@@ -68,6 +70,30 @@ export const verifyOTP = async (
   }
 };
 
+export const forgotPassword = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { email } = req.body;
+
+    const result = await forgotPasswordService(email);
+
+    res.status(200).json({
+      success: true,
+      message: result.message,
+    });
+
+  } catch (error: any) {
+
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+
+  }
+};
+
 // ===============================
 // Login
 // ===============================
@@ -116,6 +142,39 @@ export const getProfile = async (
     res.status(200).json({
       success: true,
       profile,
+    });
+
+  } catch (error: any) {
+
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+
+  }
+};
+
+export const resetPassword = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const {
+      email,
+      otp,
+      newPassword,
+    } = req.body;
+
+    const result =
+      await resetPasswordService(
+        email,
+        otp,
+        newPassword
+      );
+
+    res.status(200).json({
+      success: true,
+      message: result.message,
     });
 
   } catch (error: any) {

@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { pool } from "../config/db";
 import { sendOTPEmail } from "../utils/sendEmail";
 
+
 export const createUser = async (
   name: string,
   email: string,
@@ -205,5 +206,110 @@ export const verifyOTPService = async (
 
   return {
     message: "Email verified successfully",
+  };
+};
+
+export const forgotPasswordService = async (
+  email: string
+) => {
+  const result = await pool.query(
+    `
+    SELECT *
+    FROM users
+    WHERE email = $1
+    `,
+    [email]
+  );
+
+  if (result.rows.length === 0) {
+    throw new Error("User not found");
+  }
+
+  const user = result.rows[0];
+
+  const otp = Math.floor(
+    100000 + Math.random() * 900000
+  ).toString();
+
+  const expiry = new Date(
+    Date.now() + 10 * 60 * 1000
+  );
+
+  await pool.query(
+    `
+    UPDATE users
+    SET
+      reset_otp = $1,
+      reset_otp_expiry = $2
+    WHERE id = $3
+    `,
+    [
+      otp,
+      expiry,
+      user.id,
+    ]
+  );
+
+  await sendOTPEmail(email, otp);
+
+  return {
+    message: "Password reset OTP sent successfully",
+  };
+};
+
+export const resetPasswordService = async (
+  email: string,
+  otp: string,
+  newPassword: string
+) => {
+  const result = await pool.query(
+    `
+    SELECT *
+    FROM users
+    WHERE email = $1
+    `,
+    [email]
+  );
+
+  if (result.rows.length === 0) {
+    throw new Error("User not found");
+  }
+
+  const user = result.rows[0];
+
+  if (
+    String(user.reset_otp).trim() !==
+    String(otp).trim()
+  ) {
+    throw new Error("Invalid OTP");
+  }
+
+  if (
+    new Date() >
+    new Date(user.reset_otp_expiry)
+  ) {
+    throw new Error("OTP has expired");
+  }
+
+  const hashedPassword =
+    await bcrypt.hash(newPassword, 10);
+
+  await pool.query(
+    `
+    UPDATE users
+    SET
+      password_hash = $1,
+      reset_otp = NULL,
+      reset_otp_expiry = NULL
+    WHERE id = $2
+    `,
+    [
+      hashedPassword,
+      user.id,
+    ]
+  );
+
+  return {
+    message: "Password reset successful",
   };
 };

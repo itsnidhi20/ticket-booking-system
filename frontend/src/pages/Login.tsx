@@ -27,6 +27,7 @@ function Login() {
       });
 
       localStorage.setItem("token", res.data.token);
+
       localStorage.setItem(
         "user",
         JSON.stringify(res.data.user)
@@ -77,8 +78,17 @@ function Login() {
           onChange={(e) =>
             setPassword(e.target.value)
           }
-          className="w-full mb-8 rounded-xl border p-4 outline-none"
+          className="w-full rounded-xl border p-4 outline-none"
         />
+
+        <div className="mt-3 mb-8 text-right">
+          <Link
+            to="/forgot-password"
+            className="text-sm font-medium text-[#C36241] hover:underline"
+          >
+            Forgot Password?
+          </Link>
+        </div>
 
         <button
           type="submit"
