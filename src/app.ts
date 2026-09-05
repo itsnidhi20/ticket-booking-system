@@ -5,7 +5,9 @@ import eventRoutes from "./routes/eventRoutes";
 import userRoutes from "./routes/userRoutes";
 import bookingRoutes from "./routes/bookingRoutes";
 import { authenticate } from "./middleware/authMiddleware";
-
+import ticketRoutes from "./routes/ticketRoutes";
+import { isAdmin } from "./middleware/adminMiddleware";
+import adminRoutes from "./routes/adminRoutes";
 const app = express();
 
 app.use(
@@ -30,5 +32,17 @@ app.get("/profile", authenticate, (req, res) => {
 app.use("/events", eventRoutes);
 app.use("/users", userRoutes);
 app.use("/bookings", bookingRoutes);
+app.use("/tickets", ticketRoutes);
+app.use("/admin", adminRoutes);
+app.get(
+  "/admin-test",
+  authenticate,
+  isAdmin,
+  (req, res) => {
+    res.json({
+      message: "Welcome Admin 🎉",
+    });
+  }
+);
 
 export default app;

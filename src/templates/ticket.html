@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,Helvetica,sans-serif;
+}
+
+body{
+background:#f5f1ea;
+padding:40px;
+}
+
+.ticket{
+
+width:850px;
+margin:auto;
+background:white;
+border-radius:25px;
+overflow:hidden;
+box-shadow:0 20px 40px rgba(0,0,0,.15);
+
+}
+
+.header{
+
+background:#111;
+color:white;
+padding:35px;
+text-align:center;
+
+}
+
+.header h1{
+
+font-size:40px;
+
+}
+
+.header p{
+
+margin-top:8px;
+opacity:.8;
+
+}
+
+.banner{
+
+height:180px;
+background:url("https://images.unsplash.com/photo-1501386761578-eac5c94b800") center/cover;
+
+}
+
+.content{
+
+padding:35px;
+
+}
+
+.title{
+
+font-size:34px;
+font-weight:bold;
+margin-bottom:25px;
+
+}
+
+.row{
+
+display:flex;
+justify-content:space-between;
+margin:18px 0;
+font-size:20px;
+
+}
+
+.label{
+
+color:#777;
+
+}
+
+.value{
+
+font-weight:bold;
+
+}
+
+.line{
+
+margin:30px 0;
+border-top:2px dashed #ccc;
+
+}
+
+.footer{
+
+display:flex;
+justify-content:space-between;
+align-items:center;
+
+}
+
+.qr img{
+
+width:170px;
+
+}
+
+.note{
+
+max-width:400px;
+color:#555;
+line-height:1.7;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="ticket">
+
+<div class="header">
+
+<h1>TicketHub</h1>
+
+<p>Premium Live Experiences</p>
+
+</div>
+
+<div class="banner"></div>
+
+<div class="content">
+
+<div class="title">
+
+{{EVENT}}
+
+</div>
+
+<div class="row">
+<span class="label">Venue</span>
+<span class="value">{{VENUE}}</span>
+</div>
+
+<div class="row">
+<span class="label">Date</span>
+<span class="value">{{DATE}}</span>
+</div>
+
+<div class="row">
+<span class="label">Time</span>
+<span class="value">{{TIME}}</span>
+</div>
+
+<div class="row">
+<span class="label">Seat</span>
+<span class="value">{{SEAT}}</span>
+</div>
+
+<div class="row">
+<span class="label">Booked By</span>
+<span class="value">{{NAME}}</span>
+</div>
+
+<div class="row">
+<span class="label">Amount</span>
+<span class="value">₹{{PRICE}}</span>
+</div>
+
+<div class="line"></div>
+
+<div class="footer">
+
+<div class="note">
+
+<h2>Enjoy the Event!</h2>
+
+<br>
+
+Please carry a valid ID proof.
+
+Arrive 60 minutes before the event starts.
+
+</div>
+
+<div class="qr">
+
+<img src="{{QR}}" />
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</body>
+
+</html>

@@ -2,6 +2,12 @@ import { Ticket } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import api from "../services/api";
+import { jwtDecode } from "jwt-decode";
+
+interface TokenData {
+  id: number;
+  role: string;
+}
 
 interface User {
   id: number;
@@ -52,6 +58,13 @@ function Navbar() {
 
   const token = localStorage.getItem("token");
 
+  let role = "";
+
+if (token) {
+  const decoded = jwtDecode<TokenData>(token);
+  role = decoded.role;
+}
+
   return (
     <nav className="sticky top-0 z-50 border-b border-stone-300 bg-[#F9F6F0]/90 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-8 py-5">
@@ -68,6 +81,11 @@ function Navbar() {
           {token && (
             <Link to="/bookings">
               My Bookings
+            </Link>
+          )}
+          {token && role === "admin" && (
+            <Link to="/admin">
+              Admin
             </Link>
           )}
 

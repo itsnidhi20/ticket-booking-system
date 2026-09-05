@@ -12,6 +12,7 @@ import Profile from "./pages/Profile";
 import VerifyOTP from "./pages/VerifyOTP";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import Admin from "./pages/Admin";
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
           path="/reset-password"
           element={<ResetPassword />}
         />
+        <Route path="/admin" element={<Admin />} />
       </Routes>
     </div>
   );

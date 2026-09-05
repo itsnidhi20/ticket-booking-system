@@ -49,3 +49,35 @@ export const getEventSeats = async (
     });
   }
 };
+
+export const getSeatsByEventService = async (
+  eventId: number
+) => {
+  const result = await pool.query(
+    `
+    SELECT
+      s.id,
+      s.seat_number,
+      s.row_name,
+      s.section,
+
+      CASE
+        WHEN b.id IS NULL THEN false
+        ELSE true
+      END AS booked
+
+    FROM seats s
+
+    LEFT JOIN bookings b
+      ON b.seat_id = s.id
+      AND b.event_id = $1
+
+    ORDER BY
+      s.row_name,
+      s.seat_number
+    `,
+    [eventId]
+  );
+
+  return result.rows;
+};

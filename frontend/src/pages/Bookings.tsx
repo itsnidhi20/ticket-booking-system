@@ -57,6 +57,43 @@ function Bookings() {
     }
   };
 
+  // ⭐ NEW FUNCTION
+  const downloadTicket = async (id: number) => {
+    try {
+      const res = await api.get(
+        `/tickets/${id}/download`,
+        {
+          responseType: "blob",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem(
+              "token"
+            )}`,
+          },
+        }
+      );
+
+      const url = window.URL.createObjectURL(
+        new Blob([res.data])
+      );
+
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = `ticket-${id}.pdf`;
+
+      document.body.appendChild(link);
+
+      link.click();
+
+      link.remove();
+
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.log(err);
+      alert("Unable to download ticket");
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-2xl">
@@ -67,9 +104,7 @@ function Bookings() {
 
   return (
     <div className="min-h-screen bg-[#F9F6F0] px-8 py-12">
-
       <div className="max-w-5xl mx-auto">
-
         <h1 className="text-5xl font-bold text-[#1A1A1A] mb-10">
           My Bookings
         </h1>
@@ -86,18 +121,13 @@ function Bookings() {
           </div>
         ) : (
           <div className="space-y-6">
-
             {bookings.map((booking) => (
-
               <div
                 key={booking.id}
                 className="rounded-3xl bg-white p-8 shadow"
               >
-
                 <div className="flex justify-between items-start">
-
                   <div>
-
                     <h2 className="text-3xl font-bold">
                       {booking.title}
                     </h2>
@@ -115,29 +145,33 @@ function Bookings() {
                         booking.booking_time
                       ).toLocaleString()}
                     </p>
-
                   </div>
 
-                  <button
-                    onClick={() =>
-                      cancelBooking(booking.id)
-                    }
-                    className="rounded-full bg-red-500 px-6 py-3 text-white hover:bg-red-600"
-                  >
-                    Cancel
-                  </button>
+                  <div className="flex flex-col gap-3">
+                    <button
+                      onClick={() =>
+                        downloadTicket(booking.id)
+                      }
+                      className="rounded-full bg-[#C36241] px-6 py-3 text-white hover:bg-[#a54d30]"
+                    >
+                      Download Ticket
+                    </button>
 
+                    <button
+                      onClick={() =>
+                        cancelBooking(booking.id)
+                      }
+                      className="rounded-full bg-red-500 px-6 py-3 text-white hover:bg-red-600"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
-
               </div>
-
             ))}
-
           </div>
         )}
-
       </div>
-
     </div>
   );
 }

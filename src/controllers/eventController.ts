@@ -50,8 +50,10 @@ export const getEventSeats = async (
     const result = await pool.query(
       `
       SELECT
-        s.id,
-        s.seat_number,
+      s.id,
+      s.seat_number,
+      s.row_name,
+      s.section,
         EXISTS (
           SELECT 1
           FROM bookings b
