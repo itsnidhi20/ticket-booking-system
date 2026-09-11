@@ -211,212 +211,325 @@ const addEvent = async () => {
       Admin Dashboard
     </h1>
     <div className="bg-white rounded-3xl shadow p-8 mb-10">
-  <h2 className="text-3xl font-bold mb-6">
+  <h2 className="text-3xl font-bold mb-2">
     Add Event
   </h2>
 
-  <div className="grid grid-cols-2 gap-4">
+  <p className="text-gray-500 mb-8">
+    Create a new event and configure its seating.
+  </p>
 
-    <input
-      type="text"
-      placeholder="Title"
-      value={newEvent.title}
-      onChange={(e) =>
-        setNewEvent({
-          ...newEvent,
-          title: e.target.value,
-        })
-      }
-      className="border rounded-xl p-3"
-    />
+  {/* Event Details */}
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-    <input
-      type="date"
-      value={newEvent.event_date}
-      onChange={(e) =>
-        setNewEvent({
-          ...newEvent,
-          event_date: e.target.value,
-        })
-      }
-      className="border rounded-xl p-3"
-    />
+    <div>
+      <label className="block text-sm font-semibold mb-2">
+        Event Title
+      </label>
 
-    <input
-      type="time"
-      value={newEvent.start_time}
-      onChange={(e) =>
-        setNewEvent({
-          ...newEvent,
-          start_time: e.target.value,
-        })
-      }
-      className="border rounded-xl p-3"
-    />
+      <input
+        type="text"
+        value={newEvent.title}
+        onChange={(e) =>
+          setNewEvent({
+            ...newEvent,
+            title: e.target.value,
+          })
+        }
+        className="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#C36241]"
+      />
+    </div>
 
-    <input
-      type="time"
-      value={newEvent.end_time}
-      onChange={(e) =>
-        setNewEvent({
-          ...newEvent,
-          end_time: e.target.value,
-        })
-      }
-      className="border rounded-xl p-3"
-    />
+    <div>
+      <label className="block text-sm font-semibold mb-2">
+        Event Date
+      </label>
 
-    {/* Premium */}
+      <input
+        type="date"
+        value={newEvent.event_date}
+        onChange={(e) =>
+          setNewEvent({
+            ...newEvent,
+            event_date: e.target.value,
+          })
+        }
+        className="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#C36241]"
+      />
+    </div>
 
-<div className="col-span-2 rounded-2xl border p-5">
-  <h3 className="mb-4 text-xl font-bold text-[#C36241]">
-    Premium
-  </h3>
+    <div>
+      <label className="block text-sm font-semibold mb-2">
+        Start Time
+      </label>
 
-  <div className="grid grid-cols-3 gap-4">
-    <input
-      type="number"
-      placeholder="Price"
-      value={newEvent.premium_price}
-      onChange={(e) =>
-        setNewEvent({
-          ...newEvent,
-          premium_price: Number(e.target.value),
-        })
-      }
-      className="border rounded-xl p-3"
-    />
+      <input
+        type="time"
+        value={newEvent.start_time}
+        onChange={(e) =>
+          setNewEvent({
+            ...newEvent,
+            start_time: e.target.value,
+          })
+        }
+        className="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#C36241]"
+      />
+    </div>
 
-    <input
-      type="number"
-      placeholder="Rows"
-      value={newEvent.premium_rows}
-      onChange={(e) =>
-        setNewEvent({
-          ...newEvent,
-          premium_rows: Number(e.target.value),
-        })
-      }
-      className="border rounded-xl p-3"
-    />
+    <div>
+      <label className="block text-sm font-semibold mb-2">
+        End Time
+      </label>
 
-    <input
-      type="number"
-      placeholder="Seats / Row"
-      value={newEvent.premium_seats}
-      onChange={(e) =>
-        setNewEvent({
-          ...newEvent,
-          premium_seats: Number(e.target.value),
-        })
-      }
-      className="border rounded-xl p-3"
-    />
+      <input
+        type="time"
+        value={newEvent.end_time}
+        onChange={(e) =>
+          setNewEvent({
+            ...newEvent,
+            end_time: e.target.value,
+          })
+        }
+        className="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#C36241]"
+      />
+    </div>
+
   </div>
-</div>
 
-{/* Executive */}
+  {/* Seating Configuration */}
+  <div className="mt-10">
 
-<div className="col-span-2 rounded-2xl border p-5">
-  <h3 className="mb-4 text-xl font-bold text-[#C36241]">
-    Executive
-  </h3>
+    <h3 className="text-2xl font-bold mb-5">
+      Seating Configuration
+    </h3>
 
-  <div className="grid grid-cols-3 gap-4">
-    <input
-      type="number"
-      placeholder="Price"
-      value={newEvent.executive_price}
-      onChange={(e) =>
-        setNewEvent({
-          ...newEvent,
-          executive_price: Number(e.target.value),
-        })
-      }
-      className="border rounded-xl p-3"
-    />
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-    <input
-      type="number"
-      placeholder="Rows"
-      value={newEvent.executive_rows}
-      onChange={(e) =>
-        setNewEvent({
-          ...newEvent,
-          executive_rows: Number(e.target.value),
-        })
-      }
-      className="border rounded-xl p-3"
-    />
+      {/* Premium */}
+      <div className="rounded-2xl border border-gray-200 p-6">
+        <h4 className="text-xl font-bold text-[#C36241] mb-5">
+          Premium
+        </h4>
 
-    <input
-      type="number"
-      placeholder="Seats / Row"
-      value={newEvent.executive_seats}
-      onChange={(e) =>
-        setNewEvent({
-          ...newEvent,
-          executive_seats: Number(e.target.value),
-        })
-      }
-      className="border rounded-xl p-3"
-    />
-  </div>
-</div>
+        <div className="space-y-4">
 
-{/* Normal */}
+          <div>
+            <label className="block text-sm font-semibold mb-2">
+              Price (₹)
+            </label>
 
-<div className="col-span-2 rounded-2xl border p-5">
-  <h3 className="mb-4 text-xl font-bold text-[#C36241]">
-    Normal
-  </h3>
+            <input
+              type="number"
+              min="1"
+              value={newEvent.premium_price}
+              onChange={(e) =>
+                setNewEvent({
+                  ...newEvent,
+                  premium_price: Number(e.target.value),
+                })
+              }
+              className="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#C36241]"
+            />
+          </div>
 
-  <div className="grid grid-cols-3 gap-4">
-    <input
-      type="number"
-      placeholder="Price"
-      value={newEvent.normal_price}
-      onChange={(e) =>
-        setNewEvent({
-          ...newEvent,
-          normal_price: Number(e.target.value),
-        })
-      }
-      className="border rounded-xl p-3"
-    />
+          <div>
+            <label className="block text-sm font-semibold mb-2">
+              Number of Rows
+            </label>
 
-    <input
-      type="number"
-      placeholder="Rows"
-      value={newEvent.normal_rows}
-      onChange={(e) =>
-        setNewEvent({
-          ...newEvent,
-          normal_rows: Number(e.target.value),
-        })
-      }
-      className="border rounded-xl p-3"
-    />
+            <input
+              type="number"
+              min="1"
+              value={newEvent.premium_rows}
+              onChange={(e) =>
+                setNewEvent({
+                  ...newEvent,
+                  premium_rows: Number(e.target.value),
+                })
+              }
+              className="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#C36241]"
+            />
+          </div>
 
-    <input
-      type="number"
-      placeholder="Seats / Row"
-      value={newEvent.normal_seats}
-      onChange={(e) =>
-        setNewEvent({
-          ...newEvent,
-          normal_seats: Number(e.target.value),
-        })
-      }
-      className="border rounded-xl p-3"
-    />
-  </div>
-</div>
+          <div>
+            <label className="block text-sm font-semibold mb-2">
+              Seats per Row
+            </label>
+
+            <input
+              type="number"
+              min="1"
+              value={newEvent.premium_seats}
+              onChange={(e) =>
+                setNewEvent({
+                  ...newEvent,
+                  premium_seats: Number(e.target.value),
+                })
+              }
+              className="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#C36241]"
+            />
+          </div>
+
+          <p className="text-sm text-gray-500">
+            Total seats:{" "}
+            {newEvent.premium_rows * newEvent.premium_seats}
+          </p>
+
+        </div>
+      </div>
+
+      {/* Executive */}
+      <div className="rounded-2xl border border-gray-200 p-6">
+        <h4 className="text-xl font-bold text-[#C36241] mb-5">
+          Executive
+        </h4>
+
+        <div className="space-y-4">
+
+          <div>
+            <label className="block text-sm font-semibold mb-2">
+              Price (₹)
+            </label>
+
+            <input
+              type="number"
+              min="1"
+              value={newEvent.executive_price}
+              onChange={(e) =>
+                setNewEvent({
+                  ...newEvent,
+                  executive_price: Number(e.target.value),
+                })
+              }
+              className="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#C36241]"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold mb-2">
+              Number of Rows
+            </label>
+
+            <input
+              type="number"
+              min="1"
+              value={newEvent.executive_rows}
+              onChange={(e) =>
+                setNewEvent({
+                  ...newEvent,
+                  executive_rows: Number(e.target.value),
+                })
+              }
+              className="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#C36241]"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold mb-2">
+              Seats per Row
+            </label>
+
+            <input
+              type="number"
+              min="1"
+              value={newEvent.executive_seats}
+              onChange={(e) =>
+                setNewEvent({
+                  ...newEvent,
+                  executive_seats: Number(e.target.value),
+                })
+              }
+              className="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#C36241]"
+            />
+          </div>
+
+          <p className="text-sm text-gray-500">
+            Total seats:{" "}
+            {newEvent.executive_rows * newEvent.executive_seats}
+          </p>
+
+        </div>
+      </div>
+
+      {/* Normal */}
+      <div className="rounded-2xl border border-gray-200 p-6">
+        <h4 className="text-xl font-bold text-[#C36241] mb-5">
+          Normal
+        </h4>
+
+        <div className="space-y-4">
+
+          <div>
+            <label className="block text-sm font-semibold mb-2">
+              Price (₹)
+            </label>
+
+            <input
+              type="number"
+              min="1"
+              value={newEvent.normal_price}
+              onChange={(e) =>
+                setNewEvent({
+                  ...newEvent,
+                  normal_price: Number(e.target.value),
+                })
+              }
+              className="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#C36241]"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold mb-2">
+              Number of Rows
+            </label>
+
+            <input
+              type="number"
+              min="1"
+              value={newEvent.normal_rows}
+              onChange={(e) =>
+                setNewEvent({
+                  ...newEvent,
+                  normal_rows: Number(e.target.value),
+                })
+              }
+              className="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#C36241]"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold mb-2">
+              Seats per Row
+            </label>
+
+            <input
+              type="number"
+              min="1"
+              value={newEvent.normal_seats}
+              onChange={(e) =>
+                setNewEvent({
+                  ...newEvent,
+                  normal_seats: Number(e.target.value),
+                })
+              }
+              className="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#C36241]"
+            />
+          </div>
+
+          <p className="text-sm text-gray-500">
+            Total seats:{" "}
+            {newEvent.normal_rows * newEvent.normal_seats}
+          </p>
+
+        </div>
+      </div>
+
+    </div>
   </div>
 
   <button
     onClick={addEvent}
-    className="mt-6 bg-[#C36241] text-white px-6 py-3 rounded-xl"
+    className="mt-8 bg-[#C36241] text-white px-7 py-3 rounded-xl font-semibold hover:opacity-90 transition"
   >
     Add Event
   </button>

@@ -54,6 +54,7 @@ export const getEventSeats = async (
       s.seat_number,
       s.row_name,
       s.section,
+      s.price,
         EXISTS (
           SELECT 1
           FROM bookings b
@@ -61,11 +62,7 @@ export const getEventSeats = async (
           AND b.event_id = $1
         ) AS booked
       FROM seats s
-      WHERE s.venue_id = (
-        SELECT venue_id
-        FROM events
-        WHERE id = $1
-      )
+      WHERE s.event_id = $1
       ORDER BY s.seat_number;
       `,
       [eventId]

@@ -1,12 +1,18 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../services/api";
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 interface Seat {
   id: number;
   seat_number: string;
   row_name: string;
   section: string;
+  price: number;
   booked: boolean;
 }
 
@@ -21,16 +27,26 @@ function SeatSelection() {
     fetchSeats();
   }, [eventId]);
 
-  const fetchSeats = async () => {
-    try {
-      const res = await api.get(`/events/${eventId}/seats`);
+    const fetchSeats = async () => {
+      try {
+        const res = await api.get(`/events/${eventId}/seats`);
 
-      setSeats(res.data.seats);
+        console.log("TOTAL:", res.data.seats.length);
 
-    } catch (err) {
-      console.log(err);
-    }
-  };
+        console.log(
+          "SECTIONS:",
+          res.data.seats.reduce((x: any, s: any) => {
+            x[s.section] = (x[s.section] || 0) + 1;
+            return x;
+          }, {})
+        );
+
+        setSeats(res.data.seats);
+
+      } catch (err) {
+        console.log(err);
+      }
+    };
 
   const toggleSeat = (seat: Seat) => {
     if (seat.booked) return;
@@ -54,53 +70,119 @@ function SeatSelection() {
   };
 
   const bookSeats = async () => {
-    if (selectedSeats.length === 0) {
-      alert("Select at least one seat");
-      return;
-    }
+  if (selectedSeats.length === 0) {
+    alert("Select at least one seat");
+    return;
+  }
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      await api.post(
-        "/bookings",
-        {
-          eventId: Number(eventId),
-          seatNumbers: selectedSeats.map(
-            (seat) => seat.seat_number
-          ),
+    const res = await api.post(
+      "/bookings",
+      {
+        eventId: Number(eventId),
+        seatNumbers: selectedSeats.map(
+          (seat) => seat.seat_number
+        ),
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem(
+            "token"
+          )}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem(
-              "token"
-            )}`,
-          },
-        }
-      );
+      }
+    );
 
-      alert("Booking Successful 🎉");
+    const {
+      orderId,
+      amount,
+      currency,
+      bookingIds,
+      keyId,
+    } = res.data;
 
-      setSelectedSeats([]);
+    const options = {
+      key: keyId,
+      amount,
+      currency,
+      name: "Ticket Booking System",
+      description: "Event Ticket Booking",
+      order_id: orderId,
 
-      fetchSeats();
+      handler: async function (response: any) {
+  try {
+    const verifyRes = await api.post(
+      "/payments/verify",
+      {
+        razorpay_order_id: response.razorpay_order_id,
+        razorpay_payment_id: response.razorpay_payment_id,
+        razorpay_signature: response.razorpay_signature,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
 
-    } catch (err: any) {
+    console.log("Payment verification:", verifyRes.data);
 
-      alert(
-        err.response?.data?.message ||
-          "Booking Failed"
-      );
+    alert("Payment successful! Booking confirmed.");
+    
+    window.location.reload();
+  } catch (error: any) {
+    console.error("Payment verification failed:", error);
 
-    } finally {
+    alert(
+      error.response?.data?.message ||
+        "Payment verification failed"
+    );
+  }
+},
 
-      setLoading(false);
+      prefill: {
+        name: localStorage.getItem("name") || "",
+        email: localStorage.getItem("email") || "",
+      },
 
-    }
-  };
+      theme: {
+        color: "#C36241",
+      },
+    };
 
-  const totalPrice =
-    selectedSeats.length * 4999;
+    const razorpay = new window.Razorpay(options);
+
+    razorpay.on(
+      "payment.failed",
+      function (response: any) {
+        console.error(
+          "Payment failed:",
+          response.error
+        );
+
+        alert("Payment failed. Please try again.");
+      }
+    );
+
+    razorpay.open();
+
+    console.log("Booking IDs:", bookingIds);
+
+  } catch (err: any) {
+    alert(
+      err.response?.data?.message ||
+        "Booking Failed"
+    );
+  } finally {
+    setLoading(false);
+  }
+};
+  const totalPrice = selectedSeats.reduce(
+      (total, seat) => total + Number(seat.price),
+      0
+    );
 
   const groupedSeats = seats.reduce(
   (acc: any, seat) => {

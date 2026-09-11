@@ -8,6 +8,7 @@ import { authenticate } from "./middleware/authMiddleware";
 import ticketRoutes from "./routes/ticketRoutes";
 import { isAdmin } from "./middleware/adminMiddleware";
 import adminRoutes from "./routes/adminRoutes";
+import paymentRoutes from "./routes/paymentRoutes";
 const app = express();
 
 app.use(
@@ -34,6 +35,7 @@ app.use("/users", userRoutes);
 app.use("/bookings", bookingRoutes);
 app.use("/tickets", ticketRoutes);
 app.use("/admin", adminRoutes);
+app.use("/payments", paymentRoutes);
 app.get(
   "/admin-test",
   authenticate,

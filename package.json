@@ -21,7 +21,8 @@
     "pdfkit": "^0.19.1",
     "pg": "^8.22.0",
     "puppeteer": "^25.3.0",
-    "qrcode": "^1.5.4"
+    "qrcode": "^1.5.4",
+    "razorpay": "^2.9.8"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
