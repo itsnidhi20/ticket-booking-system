@@ -1,58 +1,28 @@
-import { Request, Response } from "express";
-import {
-  listEvents,
-  getSeatsForEvent,
-} from "../services/eventService";
+import { pool } from "../config/db";
 
 // ===============================
 // Get All Events
 // ===============================
-export const getEvents = async (
-  _req: Request,
-  res: Response
-) => {
-  try {
-    const events = await listEvents();
+export const listEvents = async () => {
+  const result = await pool.query(`
+    SELECT
+      e.*,
+      v.name AS venue_name,
+      v.city,
+      v.address
+    FROM events e
+    JOIN venues v
+      ON e.venue_id = v.id
+    ORDER BY e.event_date, e.start_time
+  `);
 
-    res.status(200).json({
-      success: true,
-      events,
-    });
-  } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      message: error.message || "Internal Server Error",
-    });
-  }
+  return result.rows;
 };
 
 // ===============================
 // Get Seats For Event
 // ===============================
-export const getEventSeats = async (
-  req: Request,
-  res: Response
-) => {
-  try {
-    const eventId = Number(req.params.id);
-
-    const seats = await getSeatsForEvent(eventId);
-
-    res.status(200).json({
-      success: true,
-      seats,
-    });
-  } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      message: error.message || "Internal Server Error",
-    });
-  }
-};
-
-export const getSeatsByEventService = async (
-  eventId: number
-) => {
+export const getSeatsForEvent = async (eventId: number) => {
   const result = await pool.query(
     `
     SELECT
@@ -60,21 +30,18 @@ export const getSeatsByEventService = async (
       s.seat_number,
       s.row_name,
       s.section,
+      s.price,
 
-      CASE
-        WHEN b.id IS NULL THEN false
-        ELSE true
-      END AS booked
+      EXISTS (
+        SELECT 1
+        FROM bookings b
+        WHERE b.seat_id = s.id
+        AND b.event_id = $1
+      ) AS booked
 
     FROM seats s
-
-    LEFT JOIN bookings b
-      ON b.seat_id = s.id
-      AND b.event_id = $1
-
-    ORDER BY
-      s.row_name,
-      s.seat_number
+    WHERE s.event_id = $1
+    ORDER BY s.row_name, s.seat_number
     `,
     [eventId]
   );

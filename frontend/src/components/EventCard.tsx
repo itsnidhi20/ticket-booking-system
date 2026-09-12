@@ -1,3 +1,4 @@
+
 import type { Event } from "../types/Event";
 import { useNavigate } from "react-router-dom";
 
@@ -8,40 +9,50 @@ interface Props {
 function EventCard({ event }: Props) {
   const navigate = useNavigate();
 
+  const handleViewDetails = () => {
+    navigate("/event/" + event.id);
+  };
+
   return (
-    <div className="group cursor-pointer">
-      <div className="aspect-[4/5] overflow-hidden rounded-3xl bg-[#d9d5ce]">
+    <div className="group cursor-pointer" onClick={handleViewDetails}>
+      <div className="aspect-[4/5] overflow-hidden rounded-2xl bg-[#d9d5ce]">
         <img
-          src={`https://picsum.photos/600/800?random=${event.id}`}
+          src={"https://picsum.photos/500/625?random=" + event.id}
           alt={event.title}
           className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
         />
       </div>
 
-      <div className="mt-5 flex items-start justify-between">
-        <div>
-          <p className="text-xs uppercase tracking-[4px] text-stone-500">
-            {event.venue}
-          </p>
+      <div className="mt-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-[10px] uppercase tracking-[3px] text-stone-500">
+              {event.venue}
+            </p>
 
-          <h3 className="mt-2 text-3xl font-bold text-[#1A1A1A]">
-            {event.title}
-          </h3>
+            <h3 className="mt-1 text-2xl font-bold leading-tight text-[#1A1A1A]">
+              {event.title}
+            </h3>
+          </div>
+
+          <p className="shrink-0 text-lg font-semibold text-[#C36241]">
+            ₹{event.price}
+          </p>
         </div>
 
-        <p className="text-xl font-semibold text-[#C36241]">
-          ₹{event.price}
-        </p>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleViewDetails();
+          }}
+          className="mt-4 w-full rounded-full border border-[#1A1A1A] py-2.5 text-sm transition hover:bg-[#1A1A1A] hover:text-white"
+        >
+          View Details
+        </button>
       </div>
-
-      <button
-        onClick={() => navigate(`/event/${event.id}`)}
-        className="mt-6 w-full rounded-full border border-[#1A1A1A] py-3 hover:bg-[#1A1A1A] hover:text-white transition"
-      >
-        View Details
-      </button>
     </div>
   );
 }
 
 export default EventCard;
+

@@ -1,42 +1,8 @@
 import { Request, Response } from "express";
 import crypto from "crypto";
-import { razorpay } from "../config/razorpay";
 import { verifyBookingPaymentService } from "../services/bookingService";
 
-export const createPaymentOrder = async (
-  req: Request,
-  res: Response
-) => {
-  try {
-    const { amount } = req.body;
 
-    if (!amount || Number(amount) <= 0) {
-      return res.status(400).json({
-        message: "Valid amount is required",
-      });
-    }
-
-    const options = {
-      amount: Math.round(Number(amount) * 100),
-      currency: "INR",
-      receipt: `receipt_${Date.now()}`,
-    };
-
-    const order = await razorpay.orders.create(options);
-
-    res.status(201).json({
-      orderId: order.id,
-      amount: order.amount,
-      currency: order.currency,
-    });
-  } catch (error: any) {
-    console.error("Razorpay order error:", error);
-
-    res.status(500).json({
-      message: "Failed to create payment order",
-    });
-  }
-};
 
 export const verifyPayment = async (
   req: Request,
@@ -51,13 +17,17 @@ export const verifyPayment = async (
       razorpay_signature,
     } = req.body;
 
+    // Validate payment verification fields
     if (
-      !razorpay_order_id ||
-      !razorpay_payment_id ||
-      !razorpay_signature
+      typeof razorpay_order_id !== "string" ||
+      typeof razorpay_payment_id !== "string" ||
+      typeof razorpay_signature !== "string" ||
+      !razorpay_order_id.trim() ||
+      !razorpay_payment_id.trim() ||
+      !razorpay_signature.trim()
     ) {
       return res.status(400).json({
-        message: "Payment verification details are required",
+        message: "Invalid payment verification details",
       });
     }
 
@@ -95,6 +65,3 @@ export const verifyPayment = async (
     });
   }
 };
-
-
-

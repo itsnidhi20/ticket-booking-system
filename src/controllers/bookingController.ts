@@ -11,14 +11,42 @@ export const createBooking = async (req: Request, res: Response) => {
 
     const { eventId, seatNumbers } = req.body;
 
+    // Validate eventId
     if (
-      !eventId ||
-      !seatNumbers ||
-      !Array.isArray(seatNumbers) ||
-      seatNumbers.length === 0
+      typeof eventId !== "number" ||
+      !Number.isInteger(eventId) ||
+      eventId <= 0
     ) {
       return res.status(400).json({
-        message: "eventId and seatNumbers are required",
+        message: "Valid eventId is required",
+      });
+    }
+
+    // Validate seatNumbers
+    if (!Array.isArray(seatNumbers) || seatNumbers.length === 0) {
+      return res.status(400).json({
+        message: "At least one seat is required",
+      });
+    }
+
+    // Limit maximum seats per booking
+    if (seatNumbers.length > 10) {
+      return res.status(400).json({
+        message: "Maximum 10 seats can be booked at once",
+      });
+    }
+
+    // Validate each seat number
+    if (
+      !seatNumbers.every(
+        (seat: unknown) =>
+          typeof seat === "string" &&
+          seat.trim().length > 0 &&
+          seat.trim().length <= 10
+      )
+    ) {
+      return res.status(400).json({
+        message: "Invalid seat number",
       });
     }
 
@@ -35,6 +63,8 @@ export const createBooking = async (req: Request, res: Response) => {
     });
   }
 };
+
+
 
 export const getMyBookings = async (
   req: Request,
@@ -61,6 +91,13 @@ export const cancelBooking = async (
     const userId = (req as any).user.id;
     const bookingId = Number(req.params.id);
 
+    // Validate booking ID
+    if (!Number.isInteger(bookingId) || bookingId <= 0) {
+      return res.status(400).json({
+        message: "Invalid booking ID",
+      });
+    }
+
     const result = await cancelBookingService(
       userId,
       bookingId
@@ -73,3 +110,4 @@ export const cancelBooking = async (
     });
   }
 };
+

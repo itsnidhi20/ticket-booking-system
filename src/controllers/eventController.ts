@@ -7,20 +7,21 @@ export const getEvents = async (
 ) => {
   try {
     const result = await pool.query(`
-      SELECT
-        e.id,
-        e.title,
-        e.description,
-        v.name AS venue,
-        e.event_date,
-        e.start_time,
-        e.end_time,
-        e.price
-      FROM events e
-      JOIN venues v
-      ON e.venue_id = v.id
-      ORDER BY e.event_date;
-    `);
+  SELECT 
+    e.id, 
+    e.title, 
+    e.description, 
+    v.name AS venue, 
+    e.event_date, 
+    e.start_time, 
+    e.end_time, 
+    e.price 
+  FROM events e
+  JOIN venues v
+    ON e.venue_id = v.id
+  WHERE (e.event_date + e.end_time) > NOW()
+  ORDER BY e.event_date, e.start_time;
+`);
 
     res.status(200).json({
       success: true,
@@ -46,6 +47,13 @@ export const getEventSeats = async (
   try {
 
     const eventId = Number(req.params.id);
+
+    await pool.query(`
+      DELETE FROM bookings
+      WHERE status = 'PENDING'
+      AND expires_at IS NOT NULL
+      AND expires_at <= NOW()
+    `);
 
     const result = await pool.query(
       `

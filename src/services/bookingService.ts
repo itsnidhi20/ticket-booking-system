@@ -153,18 +153,22 @@ export const getMyBookingsService = async (userId: number) => {
   const result = await pool.query(
     `
     SELECT
-      b.id,
-      e.title,
-      s.seat_number,
-      b.total_amount,
-      b.booking_time
-    FROM bookings b
-    JOIN events e
-      ON b.event_id = e.id
-    JOIN seats s
-      ON b.seat_id = s.id
-    WHERE b.user_id = $1
-    ORDER BY b.booking_time DESC
+  b.id,
+  e.title,
+  s.seat_number,
+  b.total_amount,
+  b.booking_time,
+  b.status,
+  b.payment_id,
+  b.expires_at
+  FROM bookings b
+  JOIN events e
+    ON b.event_id = e.id
+  JOIN seats s
+    ON b.seat_id = s.id
+  WHERE b.user_id = $1
+  AND (e.event_date + e.end_time) > NOW()
+  ORDER BY b.booking_time DESC
     `,
     [userId]
   );
@@ -178,10 +182,18 @@ export const cancelBookingService = async (
 ) => {
   const bookingResult = await pool.query(
     `
-    SELECT *
-    FROM bookings
-    WHERE id = $1
-    AND user_id = $2
+    SELECT
+      b.id,
+      b.status,
+      b.payment_id,
+      b.total_amount,
+      e.event_date,
+      e.start_time
+    FROM bookings b
+    JOIN events e
+      ON b.event_id = e.id
+    WHERE b.id = $1
+    AND b.user_id = $2
     `,
     [bookingId, userId]
   );
@@ -190,18 +202,55 @@ export const cancelBookingService = async (
     throw new Error("Booking not found");
   }
 
+  const booking = bookingResult.rows[0];
+
+  // Only paid bookings can be cancelled
+  if (booking.status !== "PAID") {
+    throw new Error("Only paid bookings can be cancelled");
+  }
+
+  if (!booking.payment_id) {
+    throw new Error("Payment ID not found for this booking");
+  }
+
+  // Combine event date + start time into one Date
+  const eventStart = new Date(
+    `${booking.event_date.toISOString().split("T")[0]}T${booking.start_time}`
+  );
+
+  const now = new Date();
+
+  // Cancellation closes 4 hours before the event
+  const cancellationDeadline = new Date(
+    eventStart.getTime() - 4 * 60 * 60 * 1000
+  );
+
+  if (now >= cancellationDeadline) {
+    throw new Error(
+      "Cancellation is only allowed up to 4 hours before the event"
+    );
+  }
+
+  // Refund the payment through Razorpay
+  await razorpay.payments.refund(booking.payment_id, {
+    amount: Math.round(Number(booking.total_amount) * 100),
+  });
+
+  // Delete booking only after refund succeeds
   await pool.query(
     `
     DELETE FROM bookings
     WHERE id = $1
+    AND user_id = $2
     `,
-    [bookingId]
+    [bookingId, userId]
   );
 
   return {
-    message: "Booking cancelled successfully",
+    message: "Booking cancelled and refund initiated successfully",
   };
 };
+
 
 
 export const verifyBookingPaymentService = async (
@@ -223,7 +272,6 @@ export const verifyBookingPaymentService = async (
       AND user_id = $2
       FOR UPDATE
       `,
-
       [razorpayOrderId, userId]
     );
 
@@ -231,7 +279,7 @@ export const verifyBookingPaymentService = async (
       throw new Error("Booking not found for this payment");
     }
 
-    // If payment was already verified, don't process it again
+    // If payment was already fully verified, don't process it again
     const alreadyPaid = bookingResult.rows.every(
       (booking) => booking.status === "PAID"
     );
@@ -244,10 +292,18 @@ export const verifyBookingPaymentService = async (
       };
     }
 
-    // Check whether the temporary reservation expired
+    // Every booking must still be pending
+    const hasInvalidStatus = bookingResult.rows.some(
+      (booking) => booking.status !== "PENDING"
+    );
+
+    if (hasInvalidStatus) {
+      throw new Error("Booking is not in a valid payment state");
+    }
+
+    // Check whether any temporary reservation has expired
     const expiredBooking = bookingResult.rows.find(
       (booking) =>
-        booking.status === "PENDING" &&
         booking.expires_at &&
         new Date(booking.expires_at) <= new Date()
     );
@@ -282,4 +338,5 @@ export const verifyBookingPaymentService = async (
     client.release();
   }
 };
+
 
