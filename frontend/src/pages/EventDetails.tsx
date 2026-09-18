@@ -12,6 +12,7 @@ interface Event {
   start_time: string;
   end_time: string;
   price: number;
+  image_url: string | null;
 }
 
 function EventDetails() {
@@ -145,7 +146,7 @@ function EventDetails() {
               <div className="relative overflow-hidden">
 
                 <img
-                  src={`https://picsum.photos/700/900?random=${event.id}`}
+                 src={event.image_url || `https://picsum.photos/700/900?random=${event.id}`}
                   alt={event.title}
                   className="h-[520px] w-full object-cover grayscale-[15%] sm:h-[620px]"
                 />

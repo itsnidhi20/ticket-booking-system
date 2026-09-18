@@ -9,6 +9,14 @@ interface TokenData {
   role: string;
 }
 
+interface Venue {
+  id: number;
+  name: string;
+  city: string;
+  address: string;
+  capacity: number;
+}
+
 interface DashboardData {
   totalEvents: number;
   totalUsers: number;
@@ -24,6 +32,10 @@ interface Event {
   start_time: string;
   end_time: string;
   price: number;
+  image_url: string | null;
+  premium_price: number;
+  executive_price: number;
+  normal_price: number;
 }
 
 function Admin() {
@@ -50,13 +62,22 @@ function Admin() {
   const [events, setEvents] = useState<Event[]>([]);
   const [editingEvent, setEditingEvent] =
     useState<Event | null>(null);
+    const [venues, setVenues] = useState<Venue[]>([]);
+  const [showAddVenue, setShowAddVenue] = useState(false);
+  const [newVenue, setNewVenue] = useState({
+  name: "",
+  city: "",
+  address: "",
+  capacity: 0,
+});
 
   const [newEvent, setNewEvent] = useState({
     title: "",
+     image_url: "",
     event_date: "",
     start_time: "",
     end_time: "",
-    venue_id: 1,
+    venue_id: 0,
 
     premium_price: 800,
     premium_rows: 2,
@@ -74,6 +95,7 @@ function Admin() {
   useEffect(() => {
     fetchDashboard();
     fetchEvents();
+    fetchVenues();
   }, []);
 
   const fetchDashboard = async () => {
@@ -108,6 +130,20 @@ function Admin() {
     }
   };
 
+  const fetchVenues = async () => {
+  try {
+    const response = await api.get("/admin/venues", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    setVenues(response.data);
+  } catch (error) {
+    console.error("Failed to fetch venues:", error);
+  }
+};
+
   const deleteEvent = async (id: number) => {
     const confirmDelete = window.confirm(
       "Delete this event?"
@@ -140,10 +176,14 @@ function Admin() {
         `/admin/events/${editingEvent.id}`,
         {
           title: editingEvent.title,
+            image_url: editingEvent.image_url,
           event_date: editingEvent.event_date,
           start_time: editingEvent.start_time,
           end_time: editingEvent.end_time,
           price: editingEvent.price,
+          premium_price: editingEvent.premium_price,
+          executive_price: editingEvent.executive_price,
+          normal_price: editingEvent.normal_price,
         },
         {
           headers: {
@@ -164,6 +204,34 @@ function Admin() {
     }
   };
 
+  const addVenue = async () => {
+  try {
+    await api.post(
+      "/admin/venues",
+      newVenue,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    alert("Venue added successfully");
+
+    setNewVenue({
+      name: "",
+      city: "",
+      address: "",
+      capacity: 0,
+    });
+
+    setShowAddVenue(false);
+    fetchVenues();
+  } catch (error) {
+    console.error(error);
+    alert("Failed to add venue");
+  }
+};
   const addEvent = async () => {
     try {
       await api.post(
@@ -180,10 +248,11 @@ function Admin() {
 
       setNewEvent({
         title: "",
+        image_url: "",
         event_date: "",
         start_time: "",
         end_time: "",
-        venue_id: 1,
+        venue_id: 0,
 
         premium_price: 800,
         premium_rows: 2,
@@ -354,6 +423,25 @@ function Admin() {
                 />
               </div>
 
+              <div>
+  <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[2px]">
+    Image URL
+  </label>
+
+  <input
+    type="url"
+    value={newEvent.image_url}
+    onChange={(e) =>
+      setNewEvent({
+        ...newEvent,
+        image_url: e.target.value,
+      })
+    }
+    placeholder="https://example.com/event-image.jpg"
+    className="w-full border border-[#1A1714]/25 bg-[#F4EFE5] p-3 text-sm text-[#1A1714] outline-none transition focus:border-[#8C3030]"
+  />
+</div>
+
 
               <div>
                 <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[2px]">
@@ -372,6 +460,103 @@ function Admin() {
                   className="w-full border border-[#1A1714]/25 bg-[#F4EFE5] p-3 text-sm text-[#1A1714] outline-none transition focus:border-[#8C3030]"
                 />
               </div>
+
+              <div>
+  <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[2px]">
+    Venue
+  </label>
+
+  <select
+    value={newEvent.venue_id}
+    onChange={(e) =>
+      setNewEvent({
+        ...newEvent,
+        venue_id: Number(e.target.value),
+      })
+    }
+    className="w-full border border-[#1A1714]/25 bg-[#F4EFE5] p-3 text-sm text-[#1A1714] outline-none transition focus:border-[#8C3030]"
+  >
+    <option value={0} disabled>
+  Select Venue
+</option>
+
+    {venues.map((venue) => (
+      <option key={venue.id} value={venue.id}>
+        {venue.name} — {venue.city}
+      </option>
+    ))}
+  </select>
+  <button
+  type="button"
+  onClick={() => setShowAddVenue(true)}
+  className="mt-2 text-xs font-semibold text-[#8C3030] hover:underline"
+>
+  + Add New Venue
+</button>
+{showAddVenue && (
+  <div>
+   <div className="mt-4 space-y-3 border border-[#1A1714]/20 p-4">
+ <input
+  type="text"
+  placeholder="Venue Name"
+  value={newVenue.name}
+  onChange={(e) =>
+    setNewVenue({
+      ...newVenue,
+      name: e.target.value,
+    })
+  }
+  className="w-full border border-[#1A1714]/25 bg-[#F4EFE5] p-3 text-sm"
+/>
+<input
+  type="text"
+  placeholder="City"
+  value={newVenue.city}
+  onChange={(e) =>
+    setNewVenue({
+      ...newVenue,
+      city: e.target.value,
+    })
+  }
+  className="w-full border border-[#1A1714]/25 bg-[#F4EFE5] p-3 text-sm"
+/>
+<input
+  type="text"
+  placeholder="Address"
+  value={newVenue.address}
+  onChange={(e) =>
+    setNewVenue({
+      ...newVenue,
+      address: e.target.value,
+    })
+  }
+  className="w-full border border-[#1A1714]/25 bg-[#F4EFE5] p-3 text-sm"
+/>
+
+  <input
+  type="number"
+  placeholder="Capacity"
+  value={newVenue.capacity}
+  onChange={(e) =>
+    setNewVenue({
+      ...newVenue,
+      capacity: Number(e.target.value),
+    })
+  }
+  className="w-full border border-[#1A1714]/25 bg-[#F4EFE5] p-3 text-sm"
+/>
+
+<button
+  type="button"
+  onClick={addVenue}
+  className="w-full bg-[#8C3030] p-3 text-sm font-semibold text-white"
+>
+  Save Venue
+</button>
+</div>
+  </div>
+)}
+</div>
 
 
               <div>
@@ -716,71 +901,183 @@ function Admin() {
 
             <div className="p-7">
 
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 
-                <input
-                  type="text"
-                  value={editingEvent.title}
-                  onChange={(e) =>
-                    setEditingEvent({
-                      ...editingEvent,
-                      title: e.target.value,
-                    })
-                  }
-                  placeholder="Title"
-                  className="border border-[#1A1714]/25 bg-[#F4EFE5] p-3 text-[#1A1714] outline-none focus:border-[#8C3030]"
-                />
+  <div>
+    <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[2px]">
+      Event Title
+    </label>
 
-                <input
-                  type="number"
-                  value={editingEvent.price}
-                  onChange={(e) =>
-                    setEditingEvent({
-                      ...editingEvent,
-                      price: Number(e.target.value),
-                    })
-                  }
-                  placeholder="Price"
-                  className="border border-[#1A1714]/25 bg-[#F4EFE5] p-3 text-[#1A1714] outline-none focus:border-[#8C3030]"
-                />
+    <input
+      type="text"
+      value={editingEvent.title}
+      onChange={(e) =>
+        setEditingEvent({
+          ...editingEvent,
+          title: e.target.value,
+        })
+      }
+      placeholder="Event Title"
+      className="w-full border border-[#1A1714]/25 bg-[#F4EFE5] p-3 text-[#1A1714] outline-none focus:border-[#8C3030]"
+    />
+  </div>
 
-                <input
-                  type="date"
-                  value={editingEvent.event_date.slice(0, 10)}
-                  onChange={(e) =>
-                    setEditingEvent({
-                      ...editingEvent,
-                      event_date: e.target.value,
-                    })
-                  }
-                  className="border border-[#1A1714]/25 bg-[#F4EFE5] p-3 text-[#1A1714] outline-none focus:border-[#8C3030]"
-                />
 
-                <input
-                  type="time"
-                  value={editingEvent.start_time}
-                  onChange={(e) =>
-                    setEditingEvent({
-                      ...editingEvent,
-                      start_time: e.target.value,
-                    })
-                  }
-                  className="border border-[#1A1714]/25 bg-[#F4EFE5] p-3 text-[#1A1714] outline-none focus:border-[#8C3030]"
-                />
+  <div>
+    <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[2px]">
+      Base Price (₹)
+    </label>
 
-                <input
-                  type="time"
-                  value={editingEvent.end_time}
-                  onChange={(e) =>
-                    setEditingEvent({
-                      ...editingEvent,
-                      end_time: e.target.value,
-                    })
-                  }
-                  className="border border-[#1A1714]/25 bg-[#F4EFE5] p-3 text-[#1A1714] outline-none focus:border-[#8C3030]"
-                />
+    <input
+      type="number"
+      value={editingEvent.price}
+      onChange={(e) =>
+        setEditingEvent({
+          ...editingEvent,
+          price: Number(e.target.value),
+        })
+      }
+      placeholder="Base Price"
+      className="w-full border border-[#1A1714]/25 bg-[#F4EFE5] p-3 text-[#1A1714] outline-none focus:border-[#8C3030]"
+    />
+  </div>
 
-              </div>
+
+  <div>
+    <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[2px]">
+      Premium Price (₹)
+    </label>
+
+    <input
+      type="number"
+      value={editingEvent.premium_price}
+      onChange={(e) =>
+        setEditingEvent({
+          ...editingEvent,
+          premium_price: Number(e.target.value),
+        })
+      }
+      placeholder="Premium Price"
+      className="w-full border border-[#1A1714]/25 bg-[#F4EFE5] p-3 text-[#1A1714] outline-none focus:border-[#8C3030]"
+    />
+  </div>
+
+
+  <div>
+    <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[2px]">
+      Executive Price (₹)
+    </label>
+
+    <input
+      type="number"
+      value={editingEvent.executive_price}
+      onChange={(e) =>
+        setEditingEvent({
+          ...editingEvent,
+          executive_price: Number(e.target.value),
+        })
+      }
+      placeholder="Executive Price"
+      className="w-full border border-[#1A1714]/25 bg-[#F4EFE5] p-3 text-[#1A1714] outline-none focus:border-[#8C3030]"
+    />
+  </div>
+
+
+  <div>
+    <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[2px]">
+      Normal Price (₹)
+    </label>
+
+    <input
+      type="number"
+      value={editingEvent.normal_price}
+      onChange={(e) =>
+        setEditingEvent({
+          ...editingEvent,
+          normal_price: Number(e.target.value),
+        })
+      }
+      placeholder="Normal Price"
+      className="w-full border border-[#1A1714]/25 bg-[#F4EFE5] p-3 text-[#1A1714] outline-none focus:border-[#8C3030]"
+    />
+  </div>
+
+
+  <div>
+    <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[2px]">
+      Event Date
+    </label>
+
+    <input
+      type="date"
+      value={editingEvent.event_date.slice(0, 10)}
+      onChange={(e) =>
+        setEditingEvent({
+          ...editingEvent,
+          event_date: e.target.value,
+        })
+      }
+      className="w-full border border-[#1A1714]/25 bg-[#F4EFE5] p-3 text-[#1A1714] outline-none focus:border-[#8C3030]"
+    />
+  </div>
+
+
+  <div>
+    <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[2px]">
+      Start Time
+    </label>
+
+    <input
+      type="time"
+      value={editingEvent.start_time}
+      onChange={(e) =>
+        setEditingEvent({
+          ...editingEvent,
+          start_time: e.target.value,
+        })
+      }
+      className="w-full border border-[#1A1714]/25 bg-[#F4EFE5] p-3 text-[#1A1714] outline-none focus:border-[#8C3030]"
+    />
+  </div>
+
+
+  <div>
+    <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[2px]">
+      End Time
+    </label>
+
+    <input
+      type="time"
+      value={editingEvent.end_time}
+      onChange={(e) =>
+        setEditingEvent({
+          ...editingEvent,
+          end_time: e.target.value,
+        })
+      }
+      className="w-full border border-[#1A1714]/25 bg-[#F4EFE5] p-3 text-[#1A1714] outline-none focus:border-[#8C3030]"
+    />
+  </div>
+
+</div>
+              <div>
+  <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[2px]">
+    Image URL
+  </label>
+
+  <input
+    type="url"
+    value={editingEvent.image_url || ""}
+    onChange={(e) =>
+      setEditingEvent({
+        ...editingEvent,
+        image_url: e.target.value,
+      })
+    }
+    placeholder="https://example.com/event-image.jpg"
+    className="w-full border border-[#1A1714]/25 bg-[#F4EFE5] p-3 text-sm text-[#1A1714] outline-none transition focus:border-[#8C3030]"
+  />
+</div>
 
 
               <div className="mt-6 flex flex-wrap gap-3">

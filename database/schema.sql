@@ -47,6 +47,7 @@ CREATE TABLE events (
     end_time TIME NOT NULL,
 
     price DECIMAL(10,2) NOT NULL,
+    image_url TEXT,
 
     premium_price DECIMAL(10,2),
     premium_rows INT,
@@ -66,7 +67,6 @@ CREATE TABLE events (
         REFERENCES venues(id)
         ON DELETE CASCADE
 );
-
 
 -- ===========================
 -- SEATS

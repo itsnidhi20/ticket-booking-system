@@ -30,6 +30,7 @@ export const downloadTicket = async (
       JOIN seats s ON b.seat_id = s.id
       WHERE b.id = $1
       AND b.user_id = $2
+      AND b.status = 'PAID'
       `,
       [bookingId, userId]
     );

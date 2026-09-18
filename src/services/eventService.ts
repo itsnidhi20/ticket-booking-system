@@ -6,10 +6,18 @@ import { pool } from "../config/db";
 export const listEvents = async () => {
   const result = await pool.query(`
     SELECT
-      e.*,
-      v.name AS venue_name,
-      v.city,
-      v.address
+  e.id,
+  e.title,
+  e.description,
+  e.venue_id,
+  e.event_date,
+  e.start_time,
+  e.end_time,
+  e.price,
+  e.image_url,
+  v.name AS venue_name,
+  v.city,
+  v.address
     FROM events e
     JOIN venues v
       ON e.venue_id = v.id

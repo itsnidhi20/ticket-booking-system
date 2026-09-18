@@ -10,6 +10,7 @@ export const getEvents = async (
   SELECT 
     e.id, 
     e.title, 
+    e.image_url,
     e.description, 
     v.name AS venue, 
     e.event_date, 

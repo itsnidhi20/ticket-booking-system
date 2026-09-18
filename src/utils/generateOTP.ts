@@ -1,3 +1,8 @@
+import { randomInt } from "crypto";
+
 export const generateOTP = (digits = 6): string => {
-  return Math.floor(10 ** (digits - 1) + Math.random() * 9 * 10 ** (digits - 1)).toString();
+  const min = 10 ** (digits - 1);
+  const max = 10 ** digits;
+
+  return randomInt(min, max).toString();
 };

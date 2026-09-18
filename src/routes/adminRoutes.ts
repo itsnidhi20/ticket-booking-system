@@ -7,6 +7,8 @@ import {
   deleteEvent,
   updateEvent,
   addEvent,
+  getVenues,
+  addVenue,
 } from "../controllers/adminController";
 
 const router = Router();
@@ -44,5 +46,19 @@ router.post(
   authenticate,
   isAdmin,
   addEvent
+);
+
+router.get(
+  "/venues",
+  authenticate,
+  isAdmin,
+  getVenues
+);
+
+router.post(
+  "/venues",
+  authenticate,
+  isAdmin,
+  addVenue
 );
 export default router;

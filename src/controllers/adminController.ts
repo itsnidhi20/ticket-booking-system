@@ -5,6 +5,8 @@ import {
   deleteEventService,
   updateEventService,
   addEventService,
+  getVenuesService,
+  addVenueService,
 } from "../services/adminService";
 
 export const getDashboard = async (
@@ -66,21 +68,29 @@ export const updateEvent = async (
     const id = Number(req.params.id);
 
     const {
-      title,
-      event_date,
-      start_time,
-      end_time,
-      price,
-    } = req.body;
+  title,
+  image_url,
+  event_date,
+  start_time,
+  end_time,
+  price,
+  premium_price,
+  executive_price,
+  normal_price,
+} = req.body;
 
     await updateEventService(
-      id,
-      title,
-      event_date,
-      start_time,
-      end_time,
-      Number(price)
-    );
+  id,
+  title,
+  image_url,
+  event_date,
+  start_time,
+  end_time,
+  Number(price),
+  Number(premium_price),
+  Number(executive_price),
+  Number(normal_price)
+);
 
     res.json({
       message: "Event updated successfully",
@@ -99,21 +109,19 @@ export const addEvent = async (
   res: Response
 ) => {
   try {
-    const {
+ const {
   title,
+  image_url,
   event_date,
   start_time,
   end_time,
   venue_id,
-
   premium_price,
   premium_rows,
   premium_seats,
-
   executive_price,
   executive_rows,
   executive_seats,
-
   normal_price,
   normal_rows,
   normal_seats,
@@ -121,6 +129,7 @@ export const addEvent = async (
 
 await addEventService(
   title,
+  image_url,
   event_date,
   start_time,
   end_time,
@@ -142,6 +151,46 @@ await addEventService(
     res.status(201).json({
       message: "Event added successfully",
     });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+};
+
+export const getVenues = async (
+  _req: Request,
+  res: Response
+) => {
+  try {
+    const venues = await getVenuesService();
+    res.json(venues);
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+};
+
+export const addVenue = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { name, city, address, capacity } = req.body;
+
+    const venue = await addVenueService(
+      name,
+      city,
+      address,
+      Number(capacity)
+    );
+
+    res.status(201).json(venue);
   } catch (error) {
     console.log(error);
 

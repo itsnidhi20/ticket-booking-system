@@ -180,75 +180,91 @@ export const cancelBookingService = async (
   userId: number,
   bookingId: number
 ) => {
-  const bookingResult = await pool.query(
-    `
-    SELECT
-      b.id,
-      b.status,
-      b.payment_id,
-      b.total_amount,
-      e.event_date,
-      e.start_time
-    FROM bookings b
-    JOIN events e
-      ON b.event_id = e.id
-    WHERE b.id = $1
-    AND b.user_id = $2
-    `,
-    [bookingId, userId]
-  );
+  const client = await pool.connect();
 
-  if (bookingResult.rows.length === 0) {
-    throw new Error("Booking not found");
-  }
+  try {
+    await client.query("BEGIN");
 
-  const booking = bookingResult.rows[0];
-
-  // Only paid bookings can be cancelled
-  if (booking.status !== "PAID") {
-    throw new Error("Only paid bookings can be cancelled");
-  }
-
-  if (!booking.payment_id) {
-    throw new Error("Payment ID not found for this booking");
-  }
-
-  // Combine event date + start time into one Date
-  const eventStart = new Date(
-    `${booking.event_date.toISOString().split("T")[0]}T${booking.start_time}`
-  );
-
-  const now = new Date();
-
-  // Cancellation closes 4 hours before the event
-  const cancellationDeadline = new Date(
-    eventStart.getTime() - 4 * 60 * 60 * 1000
-  );
-
-  if (now >= cancellationDeadline) {
-    throw new Error(
-      "Cancellation is only allowed up to 4 hours before the event"
+    // Lock the booking row so two cancellation requests
+    // cannot refund the same booking at the same time.
+    const bookingResult = await client.query(
+      `
+      SELECT
+        b.id,
+        b.status,
+        b.payment_id,
+        b.total_amount,
+        e.event_date,
+        e.start_time
+      FROM bookings b
+      JOIN events e
+        ON b.event_id = e.id
+      WHERE b.id = $1
+      AND b.user_id = $2
+      FOR UPDATE
+      `,
+      [bookingId, userId]
     );
+
+    if (bookingResult.rows.length === 0) {
+      throw new Error("Booking not found");
+    }
+
+    const booking = bookingResult.rows[0];
+
+    // Only paid bookings can be cancelled
+    if (booking.status !== "PAID") {
+      throw new Error("Only paid bookings can be cancelled");
+    }
+
+    if (!booking.payment_id) {
+      throw new Error("Payment ID not found for this booking");
+    }
+
+    // Combine event date + start time into one Date
+    const eventStart = new Date(
+      `${booking.event_date.toISOString().split("T")[0]}T${booking.start_time}`
+    );
+
+    const now = new Date();
+
+    // Cancellation closes 4 hours before the event
+    const cancellationDeadline = new Date(
+      eventStart.getTime() - 4 * 60 * 60 * 1000
+    );
+
+    if (now >= cancellationDeadline) {
+      throw new Error(
+        "Cancellation is only allowed up to 4 hours before the event"
+      );
+    }
+
+    // Refund the payment through Razorpay
+    await razorpay.payments.refund(booking.payment_id, {
+      amount: Math.round(Number(booking.total_amount) * 100),
+    });
+
+    // Delete booking only after refund succeeds
+    await client.query(
+      `
+      DELETE FROM bookings
+      WHERE id = $1
+      AND user_id = $2
+      `,
+      [bookingId, userId]
+    );
+
+    await client.query("COMMIT");
+
+    return {
+      message: "Booking cancelled and refund initiated successfully",
+    };
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
   }
-
-  // Refund the payment through Razorpay
-  await razorpay.payments.refund(booking.payment_id, {
-    amount: Math.round(Number(booking.total_amount) * 100),
-  });
-
-  // Delete booking only after refund succeeds
-  await pool.query(
-    `
-    DELETE FROM bookings
-    WHERE id = $1
-    AND user_id = $2
-    `,
-    [bookingId, userId]
-  );
-
-  return {
-    message: "Booking cancelled and refund initiated successfully",
-  };
 };
 
 

@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { pool } from "../config/db";
 import { sendOTPEmail } from "../utils/sendEmail";
+import { generateOTP } from "../utils/generateOTP";
 
 
 export const createUser = async (
@@ -45,9 +46,7 @@ export const createUser = async (
   const hashedPassword =
     await bcrypt.hash(password, 10);
 
-  const otp = Math.floor(
-    100000 + Math.random() * 900000
-  ).toString();
+const otp = generateOTP();
 
   const expiry = new Date(
     Date.now() + 10 * 60 * 1000
@@ -127,6 +126,7 @@ export const login = async (
       id: user.id,
       name: user.name,
       email: user.email,
+        role: user.role,
     },
   };
 };
@@ -173,13 +173,7 @@ export const verifyOTPService = async (
 
   const user = result.rows[0];
 
-  console.log("========== OTP DEBUG ==========");
-  console.log("Email:", email);
-  console.log("Entered OTP:", otp);
-  console.log("DB OTP:", user.otp);
-  console.log("Verified:", user.is_verified);
-  console.log("Expiry:", user.otp_expiry);
-  console.log("===============================");
+
 
   if (user.is_verified) {
     throw new Error("Email already verified");
@@ -228,9 +222,7 @@ export const forgotPasswordService = async (
 
   const user = result.rows[0];
 
-  const otp = Math.floor(
-    100000 + Math.random() * 900000
-  ).toString();
+ const otp = generateOTP();
 
   const expiry = new Date(
     Date.now() + 10 * 60 * 1000

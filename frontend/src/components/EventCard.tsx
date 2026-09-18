@@ -17,7 +17,10 @@ function EventCard({ event }: Props) {
     <div className="group cursor-pointer" onClick={handleViewDetails}>
       <div className="aspect-[4/5] overflow-hidden rounded-2xl bg-[#d9d5ce]">
         <img
-          src={"https://picsum.photos/500/625?random=" + event.id}
+          src={
+  event.image_url ||
+  `https://picsum.photos/500/625?random=${event.id}`
+}
           alt={event.title}
           className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
         />
