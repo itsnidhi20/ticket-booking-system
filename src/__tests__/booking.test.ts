@@ -48,7 +48,7 @@ describe("Bookings", () => {
     const response = await request(app)
       .post("/bookings")
       .send({
-        eventId: 3,
+        eventId: 14,
         seatNumbers: ["A1"],
       });
 
@@ -60,7 +60,7 @@ describe("Bookings", () => {
       .post("/bookings")
       .set("Authorization", "Bearer invalid-token")
       .send({
-        eventId: 3,
+        eventId: 14,
         seatNumbers: ["A1"],
       });
 
@@ -93,7 +93,7 @@ describe("Bookings", () => {
       .post("/bookings")
       .set("Authorization", `Bearer ${token}`)
       .send({
-        eventId: 3,
+        eventId: 14,
       });
 
     expect(response.status).not.toBe(201);
@@ -104,10 +104,48 @@ describe("Bookings", () => {
       .post("/bookings")
       .set("Authorization", `Bearer ${token}`)
       .send({
-        eventId: 3,
+        eventId: 14,
         seatNumbers: ["A1", "A1"],
       });
 
     expect(response.status).not.toBe(201);
+  });
+    it("should allow only one booking when 100 requests try to book the same seat", async () => {
+    const requests = Array.from({ length: 100 }, () =>
+      request(app)
+        .post("/bookings")
+        .set("Authorization", `Bearer ${token}`)
+        .send({
+          eventId: 14,
+          seatNumbers: ["A1"],
+        })
+    );
+
+    const responses = await Promise.all(requests);
+
+    const successfulBookings = responses.filter(
+      (response) => response.status === 201
+    );
+
+    const failedBookings = responses.filter(
+      (response) => response.status !== 201
+    );
+
+    expect(successfulBookings).toHaveLength(1);
+    expect(failedBookings).toHaveLength(99);
+
+    const bookingResult = await pool.query(
+      `
+      SELECT COUNT(*) AS count
+      FROM bookings b
+      JOIN seats s
+        ON b.seat_id = s.id
+      WHERE b.event_id = $1
+      AND s.seat_number = $2
+      `,
+      [14, "A1"]
+    );
+
+    expect(Number(bookingResult.rows[0].count)).toBe(1);
   });
 });

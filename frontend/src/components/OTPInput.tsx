@@ -1,4 +1,4 @@
-import React from "react";
+
 
 const OTPInput = ({ value, onChange }: any) => {
   return (
