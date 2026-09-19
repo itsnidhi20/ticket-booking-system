@@ -15,12 +15,10 @@ function VerifyOTP() {
       setLoading(true);
       setMessage("");
 
-     const res = await api.post("/users/verify-otp", {
+     await api.post("/users/verify-otp", {
   email,
   otp,
 });
-
-const data = res.data;
 
       alert("Email Verified Successfully 🎉");
 
