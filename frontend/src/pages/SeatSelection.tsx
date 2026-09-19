@@ -357,7 +357,7 @@ function SeatSelection() {
 
                 {/* Rows */}
 
-                <div className="space-y-6">
+                <div className="space-y-6 overflow-x-auto pb-2">
 
                   {Object.entries(rows).map(
                     ([rowName, rowSeats]: any) => {
@@ -380,7 +380,7 @@ function SeatSelection() {
                       return (
                         <div
                           key={rowName}
-                          className="flex items-center justify-center gap-3 sm:gap-5"
+                          className="flex min-w-max items-center justify-center gap-3 sm:min-w-0 sm:gap-5"
                         >
 
                           {/* Row label */}

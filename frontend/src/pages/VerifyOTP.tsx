@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../services/api";
 
 function VerifyOTP() {
   const navigate = useNavigate();
@@ -14,25 +15,12 @@ function VerifyOTP() {
       setLoading(true);
       setMessage("");
 
-      const res = await fetch(
-        "http://localhost:5000/users/verify-otp",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email,
-            otp,
-          }),
-        }
-      );
+     const res = await api.post("/users/verify-otp", {
+  email,
+  otp,
+});
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message);
-      }
+const data = res.data;
 
       alert("Email Verified Successfully 🎉");
 

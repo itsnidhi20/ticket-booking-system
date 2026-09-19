@@ -126,14 +126,14 @@ function Navbar() {
             <>
               <Link
                 to="/login"
-                className="rounded-full border border-[#1A1714] px-5 py-2.5 transition hover:bg-[#1A1714] hover:text-[#F4EFE5]"
+                className="rounded-full border border-[#1A1714] px-5 py-2.5 transition hover:bg-[#1A1714] hover:text-[#F4EFE5] max-sm:px-3 max-sm:py-1.5 max-sm:text-xs"
               >
                 Login
               </Link>
 
               <Link
                 to="/register"
-                className="rounded-full bg-[#8E2F2F] px-5 py-2.5 text-[#F4EFE5] transition hover:bg-[#702424]"
+                className="rounded-full bg-[#8E2F2F] px-5 py-2.5 text-[#F4EFE5] transition hover:bg-[#702424] max-sm:px-3 max-sm:py-1.5 max-sm:text-xs"
               >
                 Register
               </Link>
